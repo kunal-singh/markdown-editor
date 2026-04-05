@@ -1,0 +1,7 @@
+{
+  "extends": "@kunal-singh/typescript-config/react",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["src"]
+}
