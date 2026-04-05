@@ -14,7 +14,7 @@ install:
 	uv sync --all-packages
 
 dev:
-	uv run uvicorn apps.api.main:app --reload --host 0.0.0.0 --port 8000
+	set -a && source ../.env && set +a && uv run uvicorn apps.api.main:app --reload --host 0.0.0.0 --port 8000
 
 lint:
 	uv run ruff check apps packages

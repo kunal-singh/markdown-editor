@@ -38,6 +38,19 @@ backend/                   ← uv workspace root (tooling: ruff, mypy)
 
 ---
 
+## Persistence Layer (`packages/persistence`)
+
+- Import repositories and session from the public surface only: `from persistence import UserRepository, PageRepository, get_session, create_tables`
+- ORM models (`User`, `Page`) are internal — never import them outside `persistence`
+- All Pydantic schemas live in `core.schemas` — use `UserCreate`, `UserRead`, `PageCreate`, `PageRead`, `PageUpdate`, `PageSearchResult`
+- Password hashing is in `core.security` (`hash_password`, `verify_password`) — repositories accept `hashed_password` directly, never raw passwords
+- Inject sessions via FastAPI dependency: `SessionDep = Annotated[AsyncSession, Depends(get_session)]`
+- `create_tables()` is called in the FastAPI lifespan hook (`apps/api/main.py`) — idempotent, safe on every restart
+- `update_binary(session, page_id, binary)` is for debounced Yjs state saves only — does **not** update `content_text` or refresh the search index
+- Full-text search uses `PageRepository.search(session, query_str)` — returns `PageSearchResult` with `<mark>`-wrapped excerpts via Postgres `ts_headline`
+
+---
+
 ## Adding a shadcn component
 
 ```bash
