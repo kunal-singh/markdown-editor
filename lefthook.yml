@@ -1,0 +1,13 @@
+pre-commit:
+  commands:
+    lint-staged:
+      run: cd frontend && pnpm exec lint-staged
+    backend-format:
+      glob: "backend/**/*.py"
+      run: source backend/venv/bin/activate && ruff format {staged_files} && ruff check --fix {staged_files}
+      stage_fixed: true
+
+commit-msg:
+  commands:
+    commitlint:
+      run: pnpm --prefix frontend exec commitlint --edit {1}

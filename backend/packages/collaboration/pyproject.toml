@@ -1,0 +1,15 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "collaboration"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+  "pycrdt>=0.10",
+  "ypy-websocket>=0.12",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["collaboration"]

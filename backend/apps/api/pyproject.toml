@@ -1,0 +1,24 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "api"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "python-multipart>=0.0.9",
+  "core",
+  "persistence",
+  "collaboration",
+]
+
+[tool.uv.sources]
+core = { path = "../../packages/core", editable = true }
+persistence = { path = "../../packages/persistence", editable = true }
+collaboration = { path = "../../packages/collaboration", editable = true }
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
