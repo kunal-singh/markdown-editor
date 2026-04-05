@@ -2,7 +2,7 @@ import type { AuthUser, LoginCredentials, SignupCredentials } from "@markdown-ed
 
 export interface AuthDependencies {
   loginApi: (credentials: LoginCredentials) => Promise<AuthUser>;
-  signupApi: (credentials: SignupCredentials) => Promise<AuthUser>;
+  signupApi: (credentials: SignupCredentials & { display_name: string }) => Promise<AuthUser>;
   setCurrentUser: (user: AuthUser | null) => void;
   navigate: (path: string) => void;
 }
@@ -20,7 +20,8 @@ export async function signupUseCase(
   deps: AuthDependencies,
   credentials: SignupCredentials,
 ): Promise<void> {
-  const user = await deps.signupApi(credentials);
+  const display_name = credentials.email.split("@")[0] ?? credentials.email;
+  const user = await deps.signupApi({ ...credentials, display_name });
   deps.setCurrentUser(user);
   deps.navigate("/dashboard/pages");
 }

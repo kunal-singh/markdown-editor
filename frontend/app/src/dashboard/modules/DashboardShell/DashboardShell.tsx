@@ -60,7 +60,7 @@ export function DashboardShell() {
           <SidebarSeparator />
           {currentUser && (
             <p className="truncate px-2 py-1 text-xs text-sidebar-foreground/60 group-data-[collapsible=icon]:hidden">
-              {currentUser.email}
+              {currentUser.user.email}
             </p>
           )}
           <SidebarMenu>

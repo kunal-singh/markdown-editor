@@ -13,18 +13,29 @@ function PrivateRoute() {
   return <Outlet />;
 }
 
+function PublicOnlyRoute() {
+  const [currentUser] = useAtom(currentUserAtom);
+  if (currentUser) return <Navigate to="/dashboard/pages" replace />;
+  return <Outlet />;
+}
+
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <Navigate to="/login" replace />,
   },
   {
-    path: "/login",
-    element: <LoginPage />,
-  },
-  {
-    path: "/signup",
-    element: <SignupPage />,
+    element: <PublicOnlyRoute />,
+    children: [
+      {
+        path: "/login",
+        element: <LoginPage />,
+      },
+      {
+        path: "/signup",
+        element: <SignupPage />,
+      },
+    ],
   },
   {
     path: "/dashboard",

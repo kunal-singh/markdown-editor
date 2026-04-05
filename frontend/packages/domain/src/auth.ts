@@ -5,12 +5,16 @@ export const loginCredentialsSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
-// Same shape as login — email + password only at signup
 export const signupCredentialsSchema = loginCredentialsSchema;
 
 export const authUserSchema = z.object({
-  email: z.email(),
   access_token: z.string(),
+  token_type: z.string().optional(),
+  user: z.object({
+    id: z.uuid(),
+    email: z.email(),
+    display_name: z.string(),
+  }),
 });
 
 export type LoginCredentials = z.infer<typeof loginCredentialsSchema>;

@@ -28,7 +28,9 @@ export async function loginApi(credentials: LoginCredentials): Promise<AuthUser>
   return authUserSchema.parse(await handleResponse(res));
 }
 
-export async function signupApi(credentials: SignupCredentials): Promise<AuthUser> {
+export async function signupApi(
+  credentials: SignupCredentials & { display_name: string },
+): Promise<AuthUser> {
   const res = await fetch("/api/auth/signup", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
