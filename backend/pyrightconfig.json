@@ -1,0 +1,11 @@
+{
+  "venvPath": ".",
+  "venv": ".venv",
+  "pythonVersion": "3.11",
+  "extraPaths": [
+    "packages/core",
+    "packages/persistence",
+    "packages/collaboration",
+    "apps/api"
+  ]
+}

@@ -8,6 +8,7 @@ version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
   "pydantic[email]>=2.0",
+  "pydantic-settings>=2.0",
   "python-jose[cryptography]>=3.3",
   "passlib[argon2]>=1.7",
   "nh3>=0.2",

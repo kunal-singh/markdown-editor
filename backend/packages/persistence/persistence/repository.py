@@ -36,6 +36,12 @@ class UserRepository:
         row = await session.get(User, user_id)
         return UserRead.model_validate(row) if row is not None else None
 
+    @staticmethod
+    async def get_raw_by_email(session: AsyncSession, email: str) -> User | None:
+        """Returns the ORM User row including hashed_password for credential verification."""
+        stmt = select(User).where(User.email == email)
+        return (await session.execute(stmt)).scalar_one_or_none()
+
 
 class PageRepository:
     @staticmethod

@@ -42,6 +42,7 @@ warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = true
 strict_equality = true
+exclude = ["apps/api/bootstrap\\.py", "apps/api/container\\.py", "apps/api/main\\.py", "apps/api/routes/", "apps/api/services/"]
 
 [tool.ruff]
 line-length = 100
@@ -80,7 +81,7 @@ max-args = 5
 max-locals = 15
 
 [tool.ruff.lint.isort]
-known-first-party = ["core", "persistence", "collaboration", "apps"]
+known-first-party = ["core", "persistence", "collaboration", "apps", "services", "routes", "container", "bootstrap"]
 
 [tool.ruff.format]
 skip-magic-trailing-comma = false
