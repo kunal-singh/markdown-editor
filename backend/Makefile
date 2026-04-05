@@ -1,8 +1,9 @@
-.PHONY: help install lint type format clean
+.PHONY: help install dev lint type format clean
 
 help:
 	@echo "Available commands:"
 	@echo "  make install   - Install development dependencies"
+	@echo "  make dev       - Start API with hot reload"
 	@echo "  make lint      - Run ruff linter"
 	@echo "  make type      - Run mypy type checker"
 	@echo "  make format    - Format code with ruff"
@@ -11,6 +12,9 @@ help:
 
 install:
 	uv sync --all-packages
+
+dev:
+	uv run uvicorn apps.api.main:app --reload --host 0.0.0.0 --port 8000
 
 lint:
 	uv run ruff check apps packages
