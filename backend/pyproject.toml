@@ -9,8 +9,22 @@ description = "Markdown editor backend monorepo"
 requires-python = ">=3.11"
 dependencies = []
 
+[dependency-groups]
+dev = [
+  "ruff>=0.9",
+  "mypy>=1.13",
+]
+
 [tool.hatch.build.targets.wheel]
 packages = ["app", "packages"]
+
+[tool.uv.workspace]
+members = ["apps/api", "packages/core", "packages/persistence", "packages/collaboration"]
+
+[tool.uv.sources]
+core = { workspace = true }
+persistence = { workspace = true }
+collaboration = { workspace = true }
 
 [tool.mypy]
 python_version = "3.11"

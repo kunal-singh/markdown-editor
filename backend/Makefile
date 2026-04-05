@@ -10,21 +10,21 @@ help:
 	@echo "  make clean     - Remove build artifacts and cache"
 
 install:
-	source venv/bin/activate && pip install -e .
+	uv sync --all-packages
 
 lint:
-	source venv/bin/activate && ruff check apps packages
+	uv run ruff check apps packages
 
 type:
-	source venv/bin/activate && python -m mypy -p apps.api -p core -p persistence -p collaboration
+	uv run mypy -p apps.api -p core -p persistence -p collaboration
 
 format:
-	source venv/bin/activate && ruff format apps packages
+	uv run ruff format apps packages
 
 check: lint type
 
 clean:
 	rm -rf build dist *.egg-info
-	find . -type d -name __pycache__ -exec rm -rf {} +
-	find . -type d -name .mypy_cache -exec rm -rf {} +
-	find . -type d -name .ruff_cache -exec rm -rf {} +
+	fd -t d -H '__pycache__' --exec rm -rf {}
+	fd -t d -H '\.mypy_cache' --exec rm -rf {}
+	fd -t d -H '\.ruff_cache' --exec rm -rf {}

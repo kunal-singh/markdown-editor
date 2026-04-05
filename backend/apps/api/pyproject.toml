@@ -16,9 +16,9 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-core = { path = "../../packages/core", editable = true }
-persistence = { path = "../../packages/persistence", editable = true }
-collaboration = { path = "../../packages/collaboration", editable = true }
+core = { workspace = true }
+persistence = { workspace = true }
+collaboration = { workspace = true }
 
 [tool.hatch.build.targets.wheel]
 packages = ["."]
