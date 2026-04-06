@@ -7,7 +7,7 @@ import uuid
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.schemas import PageCreate, PageRead, PageSearchResult, PageUpdate
+from core.schemas import PageCreate, PageRead, PageSearchResult, PageTreeNode, PageUpdate
 from persistence.repository import PageRepository
 
 
@@ -53,6 +53,9 @@ class PageService:
         if page is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Page not found")
         return page
+
+    async def get_tree(self, session: AsyncSession) -> list[PageTreeNode]:
+        return await self._page_repo.get_all_shallow(session)
 
     async def search(self, session: AsyncSession, query: str) -> list[PageSearchResult]:
         if not query.strip():

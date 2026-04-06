@@ -8,20 +8,20 @@ import type {
 interface EditorCanvasProps {
   editorState: UseCollaborationResult | LocalEditorResult;
   currentUser: CollabUser;
-  title: string;
 }
 
-export function EditorCanvas({ editorState, currentUser, title }: EditorCanvasProps) {
+export function EditorCanvas({ editorState, currentUser }: EditorCanvasProps) {
   const { doc, provider, connectedUsers } = editorState;
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">{title}</h1>
-        {connectedUsers.length > 0 && <AvatarStack users={connectedUsers} />}
-      </div>
-      <div className="rounded-lg border bg-background">
-        <RichEditor doc={doc} provider={provider} currentUser={currentUser} />
+    <div className="flex flex-col gap-4 h-full">
+      {connectedUsers.length > 0 && (
+        <div className="flex justify-end">
+          <AvatarStack users={connectedUsers} />
+        </div>
+      )}
+      <div className="h-full rounded-lg border bg-background">
+        <RichEditor doc={doc} provider={provider} currentUser={currentUser} className="h-full" />
       </div>
     </div>
   );

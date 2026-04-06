@@ -1,3 +1,10 @@
 @import "tailwindcss";
 @import "@markdown-editor/ui/styles";
 @source "../../packages/editor/src";
+
+/* Make the ProseMirror div fill its flex container so the editor
+   spreads to available height instead of shrinking to content. */
+.tiptap-content-fill .ProseMirror {
+  height: 100%;
+  padding: 0.75rem;
+}

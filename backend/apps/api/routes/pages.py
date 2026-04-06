@@ -10,18 +10,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from websocket import StarletteAdapter
 
 from collaboration import CollaborationManager, handle_connection
-from core.schemas import PageCreate, PageRead, PageSearchResult, PageUpdate
+from core.schemas import PageCreate, PageRead, PageSearchResult, PageTreeNode, PageUpdate
 from persistence.database import get_session
 from services.page_service import PageService
 
 
-def build_pages_router(
-    get_service: Callable[[], PageService],
-    get_collab: Callable[[], CollaborationManager],
-) -> APIRouter:
+def _build_rest_router(get_service: Callable[[], PageService]) -> APIRouter:
     router = APIRouter()
-
-    # ------------------------------------------------------------------ REST
 
     @router.post("/", response_model=PageRead, status_code=status.HTTP_201_CREATED)
     async def create_page(
@@ -30,6 +25,13 @@ def build_pages_router(
         service: PageService = Depends(get_service),  # noqa: B008
     ) -> PageRead:
         return await service.create(session, payload)
+
+    @router.get("/tree", response_model=list[PageTreeNode])
+    async def get_tree(
+        session: AsyncSession = Depends(get_session),  # noqa: B008
+        service: PageService = Depends(get_service),  # noqa: B008
+    ) -> list[PageTreeNode]:
+        return await service.get_tree(session)
 
     @router.get("/search", response_model=list[PageSearchResult])
     async def search_pages(
@@ -72,7 +74,11 @@ def build_pages_router(
     ) -> PageRead:
         return await service.update(session, page_id, payload)
 
-    # -------------------------------------------------------------- WebSocket
+    return router
+
+
+def _build_ws_router(get_collab: Callable[[], CollaborationManager]) -> APIRouter:
+    router = APIRouter()
 
     @router.websocket("/{page_id}/ws")
     async def collab_room(
@@ -84,4 +90,14 @@ def build_pages_router(
         room = await manager.get_or_create_room(str(page_id))
         await handle_connection(StarletteAdapter(ws), room)
 
+    return router
+
+
+def build_pages_router(
+    get_service: Callable[[], PageService],
+    get_collab: Callable[[], CollaborationManager],
+) -> APIRouter:
+    router = APIRouter()
+    router.include_router(_build_rest_router(get_service))
+    router.include_router(_build_ws_router(get_collab))
     return router

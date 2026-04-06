@@ -5,7 +5,7 @@ import uuid
 from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.schemas import PageCreate, PageRead, PageSearchResult, PageUpdate, UserRead
+from core.schemas import PageCreate, PageRead, PageSearchResult, PageTreeNode, PageUpdate, UserRead
 from persistence.models import Page, User
 
 
@@ -90,6 +90,23 @@ class PageRepository:
         await session.refresh(page)
         await session.commit()
         return PageRead.model_validate(page)
+
+    @staticmethod
+    async def get_all_shallow(session: AsyncSession) -> list[PageTreeNode]:
+        """Fetch all pages (id, slug, title, parent_id only) for tree construction."""
+        stmt = select(Page.id, Page.slug, Page.title, Page.parent_id)
+        rows = (await session.execute(stmt)).all()
+
+        nodes: dict[uuid.UUID, PageTreeNode] = {
+            r.id: PageTreeNode(id=r.id, slug=r.slug, title=r.title) for r in rows
+        }
+        roots: list[PageTreeNode] = []
+        for r in rows:
+            if r.parent_id is not None and r.parent_id in nodes:
+                nodes[r.parent_id].children.append(nodes[r.id])
+            else:
+                roots.append(nodes[r.id])
+        return roots
 
     @staticmethod
     async def get_binary(session: AsyncSession, page_id: uuid.UUID) -> bytes | None:

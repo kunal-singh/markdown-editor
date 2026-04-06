@@ -42,9 +42,12 @@ export function RichEditor({
   }, [editor, readOnly]);
 
   return (
-    <div className={className}>
+    <div className={`flex h-full flex-col ${className ?? ""}`}>
       {showToolbar && editor && <EditorToolbar editor={editor} />}
-      <EditorContent editor={editor} className="prose prose-sm max-w-none focus:outline-none" />
+      <EditorContent
+        editor={editor}
+        className="tiptap-content-fill flex-1 overflow-y-auto prose prose-sm max-w-none focus:outline-none"
+      />
     </div>
   );
 }

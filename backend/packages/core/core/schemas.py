@@ -64,3 +64,15 @@ class PageSearchResult(BaseModel):
     title: str
     slug: str
     excerpt: str  # HTML with <mark> highlights from ts_headline
+
+
+class PageTreeNode(BaseModel):
+    id: uuid.UUID
+    slug: str
+    title: str
+    children: list[PageTreeNode] = []
+
+    model_config = {"from_attributes": True}
+
+
+PageTreeNode.model_rebuild()  # resolve forward ref for self-referential children
