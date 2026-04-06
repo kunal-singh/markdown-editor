@@ -14,13 +14,14 @@ Real-time collaborative markdown wiki.
    - [Frontend](#frontend)
    - [Infrastructure](#infrastructure)
    - [System Extensibility](#system-extensibility-the-monorepo-approach)
-5. [Real-Time Sync Strategy](#real-time-sync-strategy)
-6. [WebSocket Lifecycle](#websocket-lifecycle)
-7. [Database Schema](#database-schema)
-8. [Security](#security)
-9. [Frontend State Management](#frontend-state-management)
-10. [Known Limitations](#known-limitations)
-11. [AI Usage](#ai-usage)
+5. [Code Quality & AI Guardrails](#code-quality--ai-guardrails)
+6. [Real-Time Sync Strategy](#real-time-sync-strategy)
+7. [WebSocket Lifecycle](#websocket-lifecycle)
+8. [Database Schema](#database-schema)
+9. [Security](#security)
+10. [Frontend State Management](#frontend-state-management)
+11. [Known Limitations](#known-limitations)
+12. [AI Usage](#ai-usage)
 
 ---
 
@@ -185,6 +186,22 @@ Rather than a monolithic structure where everything lives in one app directory, 
 **`packages/collaboration/`** — the CRDT engine is framework-agnostic. It depends on a `DocumentStore` protocol (a typed interface) rather than hardcoded database calls. It knows how to merge `Y.Doc` binaries and extract plain text; it doesn't know about FastAPI, SQLAlchemy, or HTTP. Swapping the persistence backend — say, to Redis for active rooms — only requires a new `DocumentStore` implementation.
 
 **`packages/editor/`** — a pure UI package. The TipTap configuration and WebSocket provider hooks are encapsulated here. The rich text editor could be dropped into a completely different React application by changing the WebSocket URL it points to. Nothing in this package knows about the wiki's routing, auth, or page hierarchy.
+
+---
+
+## Code Quality & AI Guardrails
+
+One real risk with AI-assisted development is that generated code skips the boring-but-important stuff: type safety, formatting consistency, conventional commits, and catching problems before they land in the repo. This project treats tooling as a guardrail against that.
+
+**Backend** — `ruff` handles both formatting and linting (replaces Black + flake8 + isort in a single pass). `mypy` runs strict type checking across all backend packages. Both run as part of `make check` and are required to pass clean before any commit touches Python files.
+
+**Frontend** — `eslint` (with a shared config via `@kunal-singh/eslint-config`) enforces code quality across all TypeScript and React files. `prettier` handles formatting for JS/TS, JSON, CSS, and Markdown.
+
+**Commit messages** — `commitlint` enforces conventional commit format (`feat:`, `fix:`, `chore:`, etc.) on every commit message. This keeps the git history readable and makes changelogs derivable automatically.
+
+**Git hooks** — `lefthook` wires everything together at the commit boundary. On `pre-commit`, it runs `lint-staged` on the frontend (ESLint + Prettier on changed files only) and `ruff format` + `ruff check --fix` on any staged Python files. On `commit-msg`, it runs `commitlint`. Nothing broken gets committed without being flagged first.
+
+The intent: AI can generate a lot of code fast, but it doesn't always follow project conventions or catch its own type errors. The toolchain catches what the model misses.
 
 ---
 
