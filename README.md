@@ -159,13 +159,6 @@ The editor is the hardest UI component to get right. TipTap sits on top of Prose
 
 The Yjs WebSocket provider handles sync, reconnection, and awareness out of the box. It speaks the same wire protocol as the backend's `ypy-websocket` server — no custom protocol code needed on either side.
 
-**Jotai**
-
-Lightweight atom-based state. The app's global state surface is small: current user, current page, editor loading/error states. Jotai's atomic model pairs well with how Yjs dispatches updates — changes from a remote user typing a single character trigger a granular Yjs event, not a full document re-render. Jotai atoms update only the specific UI pieces that care about that change. Redux's reducer model would have funnelled everything through a single state tree, making it harder to isolate those fine-grained updates without extra memoization work.
-
-**shadcn/ui + Tailwind CSS v4**
-
-shadcn gives us accessible, composable components without the lock-in of a full component library. We own the component files — they live in `packages/ui` and are fully customizable. Tailwind v4 drops the config file in favor of CSS-native configuration, which cuts setup friction significantly.
 
 **Layered architecture (components → hooks → use cases → infra)**
 
@@ -199,10 +192,9 @@ Rather than a monolithic structure where everything lives in one app directory, 
 
 **CRDTs via Yjs (pycrdt on the server, yjs on the client)**
 
-Three approaches were on the table:
+Two approaches were on the table:
 
 1. **Operational Transform** — correct in theory, notoriously hard to implement correctly under network partitions. Not worth building from scratch under time pressure.
-2. **Last-write-wins** — simple, but produces data loss when two users type simultaneously. Acceptable for low-collaboration tools, not for a wiki.
 3. **CRDTs** — correct by construction. Two users can edit offline and merge without conflicts when they reconnect.
 
 Yjs specifically because it's battle-tested (VS Code Live Share, Liveblocks, and others use it), and the WebSocket sync protocol is standard enough that `y-websocket` on the client speaks to `ypy-websocket` on the server with no custom protocol code. On the server, `pycrdt` handles the CRDT operations — it's backed by a Rust implementation, so binary encoding and merging happen in microseconds even for large documents. Building equivalent OT from scratch in a weekend would have been both slower and almost certainly buggy under edge-case network conditions.
@@ -290,7 +282,7 @@ No string-based content state bounces between editor, WebSocket, and preview. Th
 
 **No page version history.** The Yjs binary state is stored per flush, not per edit. Point-in-time history would require storing a snapshot on every save or tracking Yjs update payloads separately.
 
-**WebSocket auth is open.** Any client can connect to any page's WebSocket room without a token. Fine for a trusted internal tool, not for public deployment.
+**WebSocket auth is open.** Any client can connect to any page's WebSocket room without a token.
 
 **Image uploads are not implemented.** The editor accepts pasted images but doesn't persist them.
 
