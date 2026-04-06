@@ -2,6 +2,7 @@ import { useAtom } from "jotai";
 import { useNavigate } from "react-router-dom";
 import { useLocalEditor } from "@markdown-editor/editor";
 import { currentUserAtom } from "@/auth/state/authAtoms";
+import { usePages } from "@/editor/hooks/usePages";
 import { EditorPageLayout } from "./EditorPageLayout";
 import { EditorCanvas } from "./EditorCanvas";
 import { PageTitleInput } from "./components/PageTitleInput";
@@ -14,6 +15,7 @@ export function NewPageView() {
   const navigate = useNavigate();
   const editorState = useLocalEditor();
   const { title, slug, setTitle, setSlug } = useEditorForm();
+  const { createPage, isLoading } = usePages();
 
   if (!authUser) return null;
 
@@ -34,9 +36,9 @@ export function NewPageView() {
             void navigate("/dashboard/pages");
           }}
           onCreate={() => {
-            // TODO: API integration (separate task)
-            return;
+            void createPage(title, slug);
           }}
+          isCreating={isLoading}
         />
       }
     />

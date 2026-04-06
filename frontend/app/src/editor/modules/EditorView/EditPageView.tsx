@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { useAtom } from "jotai";
 import { useParams } from "react-router-dom";
 import { useCollaboration } from "@markdown-editor/editor";
@@ -10,10 +10,10 @@ import { PageTitleInput } from "./components/PageTitleInput";
 import { PageSlugInput } from "./components/PageSlugInput";
 import { EditPageFooter } from "./components/EditPageFooter";
 import { useEditorForm } from "./hooks/useEditorForm";
+import { useEditPage } from "./hooks/useEditPage";
 
 const PLACEHOLDER_USER: CollabUser = { id: "anon", name: "Anonymous", color: "#6366f1" };
-const WS_URL: string =
-  (import.meta.env.VITE_WS_URL as string | undefined) ?? "ws://localhost:8000/ws/collab";
+const WS_URL: string = (import.meta.env.VITE_WS_URL as string | undefined) ?? "ws://localhost:8000";
 
 export function EditPageView() {
   const { pageId } = useParams<{ pageId: string }>();
@@ -35,11 +35,23 @@ export function EditPageView() {
     currentUser,
   });
 
-  // Pre-seed slug from route; title will be populated when API integration lands.
+  const { loadPage, saveMeta, currentPage, isLoading } = useEditPage();
+
   const { title, slug, setTitle, setSlug } = useEditorForm({
     initialTitle: "",
     initialSlug: pageId ?? "",
   });
+
+  useEffect(() => {
+    if (pageId) void loadPage(pageId);
+  }, [pageId, loadPage]);
+
+  useEffect(() => {
+    if (currentPage) {
+      setTitle(currentPage.title);
+      setSlug(currentPage.slug);
+    }
+  }, [currentPage, setTitle, setSlug]);
 
   if (!authUser || !pageId) return null;
 
@@ -51,11 +63,12 @@ export function EditPageView() {
       footer={
         <EditPageFooter
           onDelete={() => {
-            // TODO: API integration (separate task)
+            // TODO: delete API integration
           }}
           onSave={() => {
-            // TODO: API integration (separate task)
+            void saveMeta(pageId, title);
           }}
+          isSaving={isLoading}
         />
       }
     />

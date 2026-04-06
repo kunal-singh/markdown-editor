@@ -1,5 +1,6 @@
-import { Outlet, NavLink } from "react-router-dom";
-import { FileTextIcon, SettingsIcon, LogOutIcon, SearchIcon } from "lucide-react";
+import { useEffect } from "react";
+import { Outlet, useNavigate } from "react-router-dom";
+import { FileTextIcon, LogOutIcon, SearchIcon, PlusIcon } from "lucide-react";
 import {
   SidebarProvider,
   Sidebar,
@@ -16,16 +17,20 @@ import {
   SidebarTrigger,
   SidebarRail,
   SidebarSeparator,
+  Button,
 } from "@markdown-editor/ui";
 import { useAuth } from "@/auth/hooks";
-
-const NAV_ITEMS = [
-  { to: "/dashboard/pages", label: "Pages", icon: FileTextIcon },
-  { to: "/dashboard/settings", label: "Settings", icon: SettingsIcon },
-];
+import { usePages } from "@/editor/hooks/usePages";
+import { PageTreeNav } from "./PageTreeNav";
 
 export function DashboardShell() {
   const { currentUser, logout } = useAuth();
+  const { loadPageTree, pageTree } = usePages();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    void loadPageTree();
+  }, [loadPageTree]);
 
   return (
     <SidebarProvider>
@@ -53,22 +58,9 @@ export function DashboardShell() {
         </SidebarHeader>
 
         <SidebarContent>
-          <SidebarGroup>
+          <SidebarGroup className="group-data-[collapsible=icon]:hidden">
             <SidebarGroupContent>
-              <SidebarMenu>
-                {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
-                  <SidebarMenuItem key={to}>
-                    <NavLink to={to}>
-                      {({ isActive }) => (
-                        <SidebarMenuButton isActive={isActive} tooltip={label}>
-                          <Icon />
-                          <span>{label}</span>
-                        </SidebarMenuButton>
-                      )}
-                    </NavLink>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
+              <PageTreeNav pageTree={pageTree} />
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
@@ -100,6 +92,17 @@ export function DashboardShell() {
       <SidebarInset>
         <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1" />
+          <div className="ml-auto">
+            <Button
+              size="sm"
+              onClick={() => {
+                void navigate("/dashboard/pages/new");
+              }}
+            >
+              <PlusIcon className="size-4" />
+              New
+            </Button>
+          </div>
         </header>
         <main className="flex flex-1 flex-col p-6">
           <Outlet />

@@ -1,0 +1,72 @@
+import { useCallback, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAtom } from "jotai";
+import { createPageApi, getPageApi, updatePageApi, getPageTreeApi } from "@markdown-editor/infra";
+import { currentUserAtom } from "@/auth/state/authAtoms";
+import {
+  currentPageAtom,
+  pageTreeAtom,
+  pageLoadingAtom,
+  pageErrorAtom,
+} from "@/editor/state/pageAtoms";
+import {
+  createPageUseCase,
+  loadPageTreeUseCase,
+  type PageDependencies,
+} from "@/editor/useCases/pageUseCases";
+
+export function usePages() {
+  const [currentUser] = useAtom(currentUserAtom);
+  const [, setCurrentPage] = useAtom(currentPageAtom);
+  const [pageTree, setPageTree] = useAtom(pageTreeAtom);
+  const [isLoading, setIsLoading] = useAtom(pageLoadingAtom);
+  const [error, setError] = useAtom(pageErrorAtom);
+  const navigate = useNavigate();
+
+  const token = currentUser?.access_token ?? "";
+
+  const deps = useMemo<PageDependencies>(
+    () => ({
+      createPage: createPageApi,
+      getPage: getPageApi,
+      updatePage: updatePageApi,
+      getPageTree: getPageTreeApi,
+      token,
+      setCurrentPage,
+      setPageTree,
+      navigate: (path: string) => {
+        void navigate(path);
+      },
+    }),
+    [token, setCurrentPage, setPageTree, navigate],
+  );
+
+  const loadPageTree = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await loadPageTreeUseCase(deps);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load page tree");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [deps, setIsLoading, setError]);
+
+  const createPage = useCallback(
+    async (title: string, slug: string, parentId?: string) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        await createPageUseCase(deps, title, slug, parentId);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Failed to create page");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [deps, setIsLoading, setError],
+  );
+
+  return { createPage, loadPageTree, isLoading, error, pageTree };
+}
