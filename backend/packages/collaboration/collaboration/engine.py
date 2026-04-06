@@ -14,9 +14,18 @@ from .protocols import DocumentStore
 
 _log = logging.getLogger(__name__)
 
-# The key under which the editor stores the main text in the Yjs document.
-# Update this to match the frontend editor's shared type key once confirmed.
-_TEXT_KEY = "content"
+
+def _extract_text(xml: Y.YXmlElement) -> str:
+    """Extract plain text from a Yjs XmlElement using tree_walker."""
+    parts: list[str] = []
+    for node in xml.tree_walker():
+        if isinstance(node, Y.YXmlText):
+            parts.append(str(node))
+    return " ".join(filter(None, parts))
+
+
+# The XmlFragment key used by Tiptap's Collaboration extension.
+_XML_KEY = "content"
 
 _DEFAULT_DEBOUNCE_SECONDS: float = 5.0
 
@@ -52,12 +61,16 @@ class CollaborationManager:
             return room
 
     def get_plain_text(self, room_id: str) -> str:
-        """Extract plain text from the room's Yjs document."""
+        """Extract plain text from the XmlFragment stored by Tiptap's Collaboration extension.
+
+        Tiptap stores content as XmlFragment, not YText — never call get_text() on the same
+        key or it will pre-register the wrong type and crash the frontend binding.
+        """
         room = self._rooms.get(room_id)
         if room is None:
             return ""
-        ytext: Y.YText = room.ydoc.get_text(_TEXT_KEY)
-        return str(ytext)
+        xml: Y.YXmlElement = room.ydoc.get_xml_element(_XML_KEY)
+        return _extract_text(xml)
 
     # ------------------------------------------------------------------
     # Internal helpers

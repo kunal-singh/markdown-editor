@@ -1,7 +1,14 @@
 import { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAtom } from "jotai";
-import { createPageApi, getPageApi, updatePageApi, getPageTreeApi } from "@markdown-editor/infra";
+import { toast } from "@markdown-editor/ui";
+import {
+  createPageApi,
+  getPageApi,
+  getPageBySlugApi,
+  updatePageApi,
+  getPageTreeApi,
+} from "@markdown-editor/infra";
 import { currentUserAtom } from "@/auth/state/authAtoms";
 import {
   currentPageAtom,
@@ -29,6 +36,7 @@ export function usePages() {
     () => ({
       createPage: createPageApi,
       getPage: getPageApi,
+      getPageBySlug: getPageBySlugApi,
       updatePage: updatePageApi,
       getPageTree: getPageTreeApi,
       token,
@@ -60,7 +68,9 @@ export function usePages() {
       try {
         await createPageUseCase(deps, title, slug, parentId);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to create page");
+        const msg = e instanceof Error ? e.message : "Failed to create page";
+        setError(msg);
+        toast.error("Failed to create page");
       } finally {
         setIsLoading(false);
       }

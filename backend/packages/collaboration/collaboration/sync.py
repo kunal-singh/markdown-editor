@@ -16,4 +16,9 @@ async def handle_connection(ws: Websocket, room: YRoom) -> None:
     The room must already be started (``CollaborationManager.get_or_create_room``
     does this automatically).
     """
-    await room.serve(ws)
+    try:
+        await room.serve(ws)
+    except* (StopAsyncIteration, Exception):
+        # Absorb any ExceptionGroup that escapes room.serve() on client disconnect.
+        # The client is already removed from room.clients by yroom internals.
+        pass

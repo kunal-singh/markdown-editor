@@ -50,6 +50,17 @@ class Page(Base):
         ForeignKey("pages.id", ondelete="CASCADE"),
         nullable=True,
     )
+    created_by_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    last_edited_by_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    last_edited_at: Mapped[datetime | None] = mapped_column(nullable=True)
     content_binary: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
     content_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     search_vector: Mapped[str | None] = mapped_column(

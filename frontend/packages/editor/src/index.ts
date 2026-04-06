@@ -9,6 +9,8 @@ export type {
   UseCollaborationOptions,
   UseCollaborationResult,
   LocalEditorResult,
+  CollaborationReady,
+  CollaborationState,
   CollabUser,
   ConnectionStatus,
 } from "./types/editor";

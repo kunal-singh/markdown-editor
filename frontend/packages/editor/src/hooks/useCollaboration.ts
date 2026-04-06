@@ -1,22 +1,25 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
-import { buildProviderUrl, normalizeAwarenessUsers } from "../useCases/connectionUseCases";
+import { normalizeAwarenessUsers } from "../useCases/connectionUseCases";
 import type {
   UseCollaborationOptions,
-  UseCollaborationResult,
+  CollaborationState,
   ConnectionStatus,
   CollabUser,
 } from "../types/editor";
 
-export function useCollaboration(options: UseCollaborationOptions): UseCollaborationResult {
+interface CollabSession {
+  doc: Y.Doc;
+  provider: WebsocketProvider;
+}
+
+export function useCollaboration(options: UseCollaborationOptions): CollaborationState {
   const { wsUrl, roomName, currentUser, authToken } = options;
 
+  const [session, setSession] = useState<CollabSession | null>(null);
   const [status, setStatus] = useState<ConnectionStatus>("connecting");
   const [connectedUsers, setConnectedUsers] = useState<CollabUser[]>([]);
-
-  const docRef = useRef<Y.Doc | null>(null);
-  const providerRef = useRef<WebsocketProvider | null>(null);
 
   // Depend on currentUser.id — not the full object — to prevent reconnect loops
   const stableOptions = useMemo(
@@ -27,17 +30,13 @@ export function useCollaboration(options: UseCollaborationOptions): UseCollabora
 
   useEffect(() => {
     const doc = new Y.Doc();
-    const url = buildProviderUrl(
-      stableOptions.wsUrl,
-      stableOptions.roomName,
-      stableOptions.authToken,
-    );
-    const provider = new WebsocketProvider(url, stableOptions.roomName, doc);
-
+    const roomPath = `pages/${stableOptions.roomName}/ws`;
+    const provider = new WebsocketProvider(stableOptions.wsUrl, roomPath, doc);
     provider.awareness.setLocalStateField("user", stableOptions.currentUser);
 
-    docRef.current = doc;
-    providerRef.current = provider;
+    // Expose doc+provider to render via state (refs are invisible to React)
+    setSession({ doc, provider });
+    setStatus("connecting");
 
     const handleStatus = ({ status: s }: { status: string }) => {
       setStatus(s as ConnectionStatus);
@@ -59,26 +58,11 @@ export function useCollaboration(options: UseCollaborationOptions): UseCollabora
       provider.awareness.off("change", handleAwarenessChange);
       provider.destroy();
       doc.destroy();
-      docRef.current = null;
-      providerRef.current = null;
+      setSession(null);
     };
   }, [stableOptions]);
 
-  // On first render before the effect runs, return temporary stable objects.
-  // This only occurs in StrictMode's first pass — the real objects are set synchronously.
-  if (!docRef.current || !providerRef.current) {
-    return {
-      doc: new Y.Doc(),
-      provider: new WebsocketProvider("", "", new Y.Doc(), { connect: false }),
-      status,
-      connectedUsers,
-    };
-  }
+  if (!session) return null;
 
-  return {
-    doc: docRef.current,
-    provider: providerRef.current,
-    status,
-    connectedUsers,
-  };
+  return { doc: session.doc, provider: session.provider, status, connectedUsers };
 }

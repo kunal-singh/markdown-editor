@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import UTC, datetime
 
 from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -51,6 +52,7 @@ class PageRepository:
             title=page_create.title,
             parent_id=page_create.parent_id,
             content_text=page_create.content_text,
+            created_by_id=page_create.created_by_id,
         )
         session.add(page)
         await session.flush()
@@ -80,16 +82,30 @@ class PageRepository:
         session: AsyncSession,
         page_id: uuid.UUID,
         update: PageUpdate,
+        edited_by_id: uuid.UUID | None = None,
     ) -> PageRead | None:
         page = await session.get(Page, page_id)
         if page is None:
             return None
         for field, value in update.model_dump(exclude_unset=True).items():
             setattr(page, field, value)
+        if edited_by_id is not None:
+            page.last_edited_by_id = edited_by_id
+            page.last_edited_at = datetime.now(UTC).replace(tzinfo=None)
         await session.flush()
         await session.refresh(page)
         await session.commit()
         return PageRead.model_validate(page)
+
+    @staticmethod
+    async def delete(session: AsyncSession, page_id: uuid.UUID) -> bool:
+        """Delete a page and all its descendants (cascade). Returns False if not found."""
+        page = await session.get(Page, page_id)
+        if page is None:
+            return False
+        await session.delete(page)
+        await session.commit()
+        return True
 
     @staticmethod
     async def get_all_shallow(session: AsyncSession) -> list[PageTreeNode]:

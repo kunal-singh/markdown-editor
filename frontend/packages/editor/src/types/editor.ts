@@ -32,3 +32,7 @@ export interface LocalEditorResult {
   status: "disconnected";
   connectedUsers: [];
 }
+
+// null = refs not yet populated (before the WS effect fires on first render).
+export type CollaborationReady = UseCollaborationResult | LocalEditorResult;
+export type CollaborationState = CollaborationReady | null;

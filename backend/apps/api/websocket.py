@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import contextlib
+
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
 
@@ -25,7 +27,11 @@ class StarletteAdapter:
             raise StopAsyncIteration from None
 
     async def send(self, message: bytes) -> None:
-        await self._ws.send_bytes(message)
+        # Silently drop sends on a closed connection — disconnect is signalled
+        # to ypy-websocket via __anext__ raising StopAsyncIteration.
+        with contextlib.suppress(RuntimeError, WebSocketDisconnect):
+            await self._ws.send_bytes(message)
 
     async def recv(self) -> bytes:
+        # Let WebSocketDisconnect propagate — ypy-websocket catches it via __anext__.
         return await self._ws.receive_bytes()

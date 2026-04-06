@@ -44,6 +44,13 @@ export async function updatePageApi(
   return pageReadSchema.parse(await handleResponse(res));
 }
 
+export async function getPageBySlugApi(slug: string, token: string): Promise<PageRead> {
+  const res = await fetch(`/api/pages/by-slug/${slug}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return pageReadSchema.parse(await handleResponse(res));
+}
+
 export async function getPageTreeApi(token: string): Promise<PageTreeNode[]> {
   const res = await fetch("/api/pages/tree", {
     headers: { Authorization: `Bearer ${token}` },

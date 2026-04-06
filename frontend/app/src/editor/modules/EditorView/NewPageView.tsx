@@ -14,7 +14,7 @@ export function NewPageView() {
   const [authUser] = useAtom(currentUserAtom);
   const navigate = useNavigate();
   const editorState = useLocalEditor();
-  const { title, slug, setTitle, setSlug } = useEditorForm();
+  const { title, slug, isValid, setTitle, setSlug } = useEditorForm();
   const { createPage, isLoading } = usePages();
 
   if (!authUser) return null;
@@ -39,6 +39,7 @@ export function NewPageView() {
             void createPage(title, slug);
           }}
           isCreating={isLoading}
+          disabled={!isValid}
         />
       }
     />

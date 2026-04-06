@@ -8,3 +8,37 @@
   height: 100%;
   padding: 0.75rem;
 }
+
+/* Collaboration cursor — thin caret only, no full-line highlight */
+.collaboration-cursor__caret {
+  border-left: 2px solid;
+  border-color: inherit;
+  margin-left: -1px;
+  margin-right: -1px;
+  pointer-events: none;
+  position: relative;
+  word-break: normal;
+}
+
+/* Hide the name label by default, show on hover */
+.collaboration-cursor__label {
+  border-radius: 3px 3px 3px 0;
+  color: #fff;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+  left: -1px;
+  line-height: 1.2;
+  opacity: 0;
+  padding: 2px 5px;
+  pointer-events: none;
+  position: absolute;
+  top: -1.4em;
+  transition: opacity 0.1s ease;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.collaboration-cursor__caret:hover .collaboration-cursor__label {
+  opacity: 1;
+}

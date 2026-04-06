@@ -53,7 +53,9 @@ def create_app() -> FastAPI:
     collab_dep = _make_collab_dep(container)
 
     app.include_router(build_auth_router(auth_dep), prefix="/auth", tags=["auth"])
-    app.include_router(build_pages_router(page_dep, collab_dep), prefix="/pages", tags=["pages"])
+    app.include_router(
+        build_pages_router(page_dep, auth_dep, collab_dep), prefix="/pages", tags=["pages"]
+    )
 
     @app.get("/health", response_model=HealthResponse)
     async def health() -> HealthResponse:

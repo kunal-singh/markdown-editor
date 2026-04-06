@@ -8,6 +8,7 @@ import type {
 export interface PageDependencies {
   createPage: (body: CreatePageRequest, token: string) => Promise<PageRead>;
   getPage: (pageId: string, token: string) => Promise<PageRead>;
+  getPageBySlug: (slug: string, token: string) => Promise<PageRead>;
   updatePage: (pageId: string, body: PageUpdate, token: string) => Promise<PageRead>;
   getPageTree: (token: string) => Promise<PageTreeNode[]>;
   token: string;
@@ -21,8 +22,8 @@ export async function loadPageTreeUseCase(deps: PageDependencies): Promise<void>
   deps.setPageTree(tree);
 }
 
-export async function loadPageUseCase(deps: PageDependencies, pageId: string): Promise<void> {
-  const page = await deps.getPage(pageId, deps.token);
+export async function loadPageBySlugUseCase(deps: PageDependencies, slug: string): Promise<void> {
+  const page = await deps.getPageBySlug(slug, deps.token);
   deps.setCurrentPage(page);
 }
 
@@ -39,7 +40,7 @@ export async function createPageUseCase(
   const page = await deps.createPage({ title, slug, parent_id: parentId }, deps.token);
   deps.setCurrentPage(page);
   await loadPageTreeUseCase(deps);
-  deps.navigate(`/dashboard/pages/${page.id}`);
+  deps.navigate(`/dashboard/pages/${page.slug}`);
 }
 
 export async function savePageMetaUseCase(

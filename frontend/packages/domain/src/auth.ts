@@ -17,6 +17,13 @@ export const authUserSchema = z.object({
   }),
 });
 
+export const userReadSchema = z.object({
+  id: z.uuid(),
+  email: z.email(),
+  display_name: z.string(),
+});
+
 export type LoginCredentials = z.infer<typeof loginCredentialsSchema>;
 export type SignupCredentials = z.infer<typeof signupCredentialsSchema>;
 export type AuthUser = z.infer<typeof authUserSchema>;
+export type UserRead = z.infer<typeof userReadSchema>;

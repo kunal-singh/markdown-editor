@@ -6,25 +6,21 @@ import uuid
 from collections.abc import Callable
 
 from fastapi import APIRouter, Depends, WebSocket, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from websocket import StarletteAdapter
 
 from collaboration import CollaborationManager, handle_connection
 from core.schemas import PageCreate, PageRead, PageSearchResult, PageTreeNode, PageUpdate
 from persistence.database import get_session
+from services.auth_service import AuthService
 from services.page_service import PageService
 
+_bearer = HTTPBearer(auto_error=False)
 
-def _build_rest_router(get_service: Callable[[], PageService]) -> APIRouter:
+
+def _build_read_router(get_service: Callable[[], PageService]) -> APIRouter:
     router = APIRouter()
-
-    @router.post("/", response_model=PageRead, status_code=status.HTTP_201_CREATED)
-    async def create_page(
-        payload: PageCreate,
-        session: AsyncSession = Depends(get_session),  # noqa: B008
-        service: PageService = Depends(get_service),  # noqa: B008
-    ) -> PageRead:
-        return await service.create(session, payload)
 
     @router.get("/tree", response_model=list[PageTreeNode])
     async def get_tree(
@@ -65,14 +61,51 @@ def _build_rest_router(get_service: Callable[[], PageService]) -> APIRouter:
     ) -> list[PageRead]:
         return await service.get_children(session, page_id)
 
+    return router
+
+
+def _build_write_router(
+    get_service: Callable[[], PageService],
+    get_auth: Callable[[], AuthService],
+) -> APIRouter:
+    router = APIRouter()
+
+    async def _current_user_id(
+        session: AsyncSession = Depends(get_session),  # noqa: B008
+        auth: AuthService = Depends(get_auth),  # noqa: B008
+        credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),  # noqa: B008
+    ) -> uuid.UUID | None:
+        if credentials is None:
+            return None
+        user = await auth.get_current_user(session, credentials.credentials)
+        return user.id
+
+    @router.post("/", response_model=PageRead, status_code=status.HTTP_201_CREATED)
+    async def create_page(
+        payload: PageCreate,
+        session: AsyncSession = Depends(get_session),  # noqa: B008
+        service: PageService = Depends(get_service),  # noqa: B008
+        user_id: uuid.UUID | None = Depends(_current_user_id),  # noqa: B008
+    ) -> PageRead:
+        return await service.create(session, payload, user_id=user_id)
+
     @router.patch("/{page_id}", response_model=PageRead)
     async def update_page(
         page_id: uuid.UUID,
         payload: PageUpdate,
         session: AsyncSession = Depends(get_session),  # noqa: B008
         service: PageService = Depends(get_service),  # noqa: B008
+        user_id: uuid.UUID | None = Depends(_current_user_id),  # noqa: B008
     ) -> PageRead:
-        return await service.update(session, page_id, payload)
+        return await service.update(session, page_id, payload, user_id=user_id)
+
+    @router.delete("/{page_id}", status_code=status.HTTP_204_NO_CONTENT)
+    async def delete_page(
+        page_id: uuid.UUID,
+        session: AsyncSession = Depends(get_session),  # noqa: B008
+        service: PageService = Depends(get_service),  # noqa: B008
+    ) -> None:
+        await service.delete(session, page_id)
 
     return router
 
@@ -95,9 +128,11 @@ def _build_ws_router(get_collab: Callable[[], CollaborationManager]) -> APIRoute
 
 def build_pages_router(
     get_service: Callable[[], PageService],
+    get_auth: Callable[[], AuthService],
     get_collab: Callable[[], CollaborationManager],
 ) -> APIRouter:
     router = APIRouter()
-    router.include_router(_build_rest_router(get_service))
+    router.include_router(_build_read_router(get_service))
+    router.include_router(_build_write_router(get_service, get_auth))
     router.include_router(_build_ws_router(get_collab))
     return router

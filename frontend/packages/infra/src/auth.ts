@@ -1,8 +1,10 @@
 import {
   authUserSchema,
+  userReadSchema,
   type AuthUser,
   type LoginCredentials,
   type SignupCredentials,
+  type UserRead,
 } from "@markdown-editor/domain";
 import { handleResponse } from "./utils";
 
@@ -24,4 +26,11 @@ export async function signupApi(
     body: JSON.stringify(credentials),
   });
   return authUserSchema.parse(await handleResponse(res));
+}
+
+export async function getUserApi(userId: string, token: string): Promise<UserRead> {
+  const res = await fetch(`/api/auth/users/${userId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return userReadSchema.parse(await handleResponse(res));
 }

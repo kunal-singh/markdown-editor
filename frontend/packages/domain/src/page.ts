@@ -16,8 +16,13 @@ export const pageReadSchema = z.object({
   id: z.uuid(),
   slug: slugSchema,
   title: z.string(),
-  parent_id: z.uuid().optional(),
-  content_text: z.string().optional(),
+  parent_id: z.uuid().nullable().optional(),
+  content_text: z.string().nullable().optional(),
+  created_by_id: z.uuid().nullable().optional(),
+  last_edited_by_id: z.uuid().nullable().optional(),
+  last_edited_at: z.iso.datetime().nullable().optional(),
+  created_at: z.iso.datetime().optional(),
+  updated_at: z.iso.datetime().optional(),
 });
 
 export const pageUpdateSchema = z.object({

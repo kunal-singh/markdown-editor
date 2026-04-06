@@ -15,7 +15,12 @@ class PageService:
     def __init__(self, page_repo: PageRepository) -> None:
         self._page_repo = page_repo
 
-    async def create(self, session: AsyncSession, payload: PageCreate) -> PageRead:
+    async def create(
+        self,
+        session: AsyncSession,
+        payload: PageCreate,
+        user_id: uuid.UUID | None = None,
+    ) -> PageRead:
         existing = await self._page_repo.get_by_slug(session, payload.slug)
         if existing is not None:
             raise HTTPException(
@@ -29,6 +34,7 @@ class PageService:
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Parent page not found",
                 )
+        payload.created_by_id = user_id
         return await self._page_repo.create(session, payload)
 
     async def get_by_slug(self, session: AsyncSession, slug: str) -> PageRead:
@@ -47,12 +53,21 @@ class PageService:
         return await self._page_repo.get_children(session, parent_id)
 
     async def update(
-        self, session: AsyncSession, page_id: uuid.UUID, payload: PageUpdate
+        self,
+        session: AsyncSession,
+        page_id: uuid.UUID,
+        payload: PageUpdate,
+        user_id: uuid.UUID | None = None,
     ) -> PageRead:
-        page = await self._page_repo.update(session, page_id, payload)
+        page = await self._page_repo.update(session, page_id, payload, edited_by_id=user_id)
         if page is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Page not found")
         return page
+
+    async def delete(self, session: AsyncSession, page_id: uuid.UUID) -> None:
+        found = await self._page_repo.delete(session, page_id)
+        if not found:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Page not found")
 
     async def get_tree(self, session: AsyncSession) -> list[PageTreeNode]:
         return await self._page_repo.get_all_shallow(session)

@@ -1,12 +1,8 @@
 import { RichEditor, AvatarStack } from "@markdown-editor/editor";
-import type {
-  CollabUser,
-  LocalEditorResult,
-  UseCollaborationResult,
-} from "@markdown-editor/editor";
+import type { CollabUser, CollaborationReady } from "@markdown-editor/editor";
 
 interface EditorCanvasProps {
-  editorState: UseCollaborationResult | LocalEditorResult;
+  editorState: CollaborationReady;
   currentUser: CollabUser;
 }
 
@@ -21,7 +17,13 @@ export function EditorCanvas({ editorState, currentUser }: EditorCanvasProps) {
         </div>
       )}
       <div className="h-full rounded-lg border bg-background">
-        <RichEditor doc={doc} provider={provider} currentUser={currentUser} className="h-full" />
+        <RichEditor
+          doc={doc}
+          provider={provider}
+          currentUser={currentUser}
+          fieldName="content"
+          className="h-full"
+        />
       </div>
     </div>
   );

@@ -23,7 +23,7 @@ function PageTreeNavNode({ node, isSubItem = false }: PageTreeNavNodeProps) {
 
   const handleClick = () => {
     if (hasChildren) setIsOpen((prev) => !prev);
-    void navigate(`/dashboard/pages/${node.id}`);
+    void navigate(`/dashboard/pages/${node.slug}`);
   };
 
   return (

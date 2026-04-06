@@ -40,6 +40,7 @@ class PageCreate(BaseModel):
     title: str = Field(min_length=1, max_length=500)
     parent_id: uuid.UUID | None = None
     content_text: str | None = None
+    created_by_id: uuid.UUID | None = None
 
 
 class PageRead(BaseModel):
@@ -50,6 +51,9 @@ class PageRead(BaseModel):
     title: str
     parent_id: uuid.UUID | None
     content_text: str | None
+    created_by_id: uuid.UUID | None
+    last_edited_by_id: uuid.UUID | None
+    last_edited_at: datetime | None
     created_at: datetime
     updated_at: datetime
 

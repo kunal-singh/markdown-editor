@@ -20,7 +20,7 @@ export function buildExtensions(
   fieldName: string,
 ) {
   return [
-    StarterKit.configure({ history: false }),
+    StarterKit.configure({ history: false, codeBlock: false }),
     Collaboration.configure({ document: doc, field: fieldName }),
     // CollaborationCursor requires a live provider — omit in local (new-page) mode.
     ...(provider ? [CollaborationCursor.configure({ provider, user: currentUser })] : []),

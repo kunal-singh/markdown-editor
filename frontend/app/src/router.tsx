@@ -59,7 +59,7 @@ export const router = createBrowserRouter([
             element: <NewPageView />,
           },
           {
-            path: "pages/:pageId",
+            path: "pages/:slug",
             element: <EditPageView />,
           },
           {

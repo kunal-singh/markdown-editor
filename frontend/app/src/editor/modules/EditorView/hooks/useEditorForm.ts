@@ -9,6 +9,7 @@ interface UseEditorFormOptions {
 interface UseEditorFormResult {
   title: string;
   slug: string;
+  isValid: boolean;
   setTitle: (value: string) => void;
   setSlug: (value: string) => void;
 }
@@ -35,5 +36,7 @@ export function useEditorForm({
     setSlugState(value);
   };
 
-  return { title, slug, setTitle, setSlug };
+  const isValid = title.trim().length >= 3 && slug.trim().length >= 3;
+
+  return { title, slug, isValid, setTitle, setSlug };
 }
