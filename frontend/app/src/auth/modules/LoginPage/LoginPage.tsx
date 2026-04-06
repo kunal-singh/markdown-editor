@@ -84,9 +84,6 @@ export function LoginPage() {
                   <Button type="submit" disabled={isLoading} className="w-full">
                     {isLoading ? <LoaderCircleIcon className="animate-spin" /> : "Login"}
                   </Button>
-                  <Button variant="outline" type="button" className="w-full">
-                    Login with Google
-                  </Button>
                 </FieldGroup>
 
                 <p className="text-center text-sm text-muted-foreground">
