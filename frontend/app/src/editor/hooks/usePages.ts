@@ -15,6 +15,7 @@ import {
   pageTreeAtom,
   pageLoadingAtom,
   pageErrorAtom,
+  pageTreeFetchedAtom,
 } from "@/editor/state/pageAtoms";
 import {
   createPageUseCase,
@@ -28,6 +29,7 @@ export function usePages() {
   const [pageTree, setPageTree] = useAtom(pageTreeAtom);
   const [isLoading, setIsLoading] = useAtom(pageLoadingAtom);
   const [error, setError] = useAtom(pageErrorAtom);
+  const [, setPageTreeFetched] = useAtom(pageTreeFetchedAtom);
   const navigate = useNavigate();
 
   const token = currentUser?.access_token ?? "";
@@ -54,12 +56,13 @@ export function usePages() {
     setError(null);
     try {
       await loadPageTreeUseCase(deps);
+      setPageTreeFetched(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load page tree");
     } finally {
       setIsLoading(false);
     }
-  }, [deps, setIsLoading, setError]);
+  }, [deps, setIsLoading, setError, setPageTreeFetched]);
 
   const createPage = useCallback(
     async (title: string, slug: string, parentId?: string) => {

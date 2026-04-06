@@ -2,10 +2,12 @@ import {
   createPageRequestSchema,
   pageReadSchema,
   pageTreeResponseSchema,
+  pageSearchResultSchema,
   type CreatePageRequest,
   type PageRead,
   type PageUpdate,
   type PageTreeNode,
+  type PageSearchResult,
 } from "@markdown-editor/domain";
 import { handleResponse } from "./utils";
 
@@ -56,4 +58,11 @@ export async function getPageTreeApi(token: string): Promise<PageTreeNode[]> {
     headers: { Authorization: `Bearer ${token}` },
   });
   return pageTreeResponseSchema.parse(await handleResponse(res));
+}
+
+export async function searchPagesApi(q: string, token: string): Promise<PageSearchResult[]> {
+  const res = await fetch(`/api/pages/search?q=${encodeURIComponent(q)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return pageSearchResultSchema.array().parse(await handleResponse(res));
 }

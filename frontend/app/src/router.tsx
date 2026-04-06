@@ -4,7 +4,8 @@ import { currentUserAtom } from "@/auth/state/authAtoms";
 import { LoginPage } from "@/auth/modules/LoginPage/LoginPage";
 import { SignupPage } from "@/auth/modules/SignupPage/SignupPage";
 import { DashboardShell } from "@/dashboard/modules/DashboardShell/DashboardShell";
-import { PagesView } from "@/dashboard/modules/PagesView/PagesView";
+import { DashboardIndex } from "@/dashboard/modules/DashboardIndex";
+import { NotFoundView } from "@/dashboard/modules/NotFoundView";
 import { SettingsView } from "@/dashboard/modules/SettingsView/SettingsView";
 import { NewPageView } from "@/editor/modules/EditorView/NewPageView";
 import { EditPageView } from "@/editor/modules/EditorView/EditPageView";
@@ -17,7 +18,7 @@ function PrivateRoute() {
 
 function PublicOnlyRoute() {
   const [currentUser] = useAtom(currentUserAtom);
-  if (currentUser) return <Navigate to="/dashboard/pages" replace />;
+  if (currentUser) return <Navigate to="/dashboard" replace />;
   return <Outlet />;
 }
 
@@ -48,11 +49,7 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <Navigate to="/dashboard/pages" replace />,
-          },
-          {
-            path: "pages",
-            element: <PagesView />,
+            element: <DashboardIndex />,
           },
           {
             path: "pages/new",
@@ -65,6 +62,10 @@ export const router = createBrowserRouter([
           {
             path: "settings",
             element: <SettingsView />,
+          },
+          {
+            path: "*",
+            element: <NotFoundView />,
           },
         ],
       },

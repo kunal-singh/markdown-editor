@@ -5,7 +5,9 @@ import { useCollaboration } from "@markdown-editor/editor";
 import type { CollabUser, CollaborationReady } from "@markdown-editor/editor";
 import { getUserApi } from "@markdown-editor/infra";
 import { currentUserAtom } from "@/auth/state/authAtoms";
-import type { PageRead } from "@markdown-editor/domain";
+import { pageTreeAtom } from "@/editor/state/pageAtoms";
+import type { PageRead, PageTreeNode } from "@markdown-editor/domain";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@markdown-editor/ui";
 import { EditorPageLayout } from "./EditorPageLayout";
 import { EditorCanvas } from "./EditorCanvas";
 import { PageTitleInput } from "./components/PageTitleInput";
@@ -13,6 +15,11 @@ import { PageSlugInput } from "./components/PageSlugInput";
 import { EditPageFooter } from "./components/EditPageFooter";
 import { useEditorForm } from "./hooks/useEditorForm";
 import { useEditPage } from "./hooks/useEditPage";
+import { NotFoundView } from "@/dashboard/modules/NotFoundView";
+
+function flattenTree(nodes: PageTreeNode[]): { id: string; title: string }[] {
+  return nodes.flatMap((n) => [{ id: n.id, title: n.title }, ...flattenTree(n.children)]);
+}
 
 const PLACEHOLDER_USER: CollabUser = { id: "anon", name: "Anonymous", color: "#6366f1" };
 const WS_URL: string = (import.meta.env.VITE_WS_URL as string | undefined) ?? "ws://localhost:8000";
@@ -22,13 +29,19 @@ const WS_URL: string = (import.meta.env.VITE_WS_URL as string | undefined) ?? "w
 interface ConnectedEditorProps {
   page: PageRead;
   currentUser: CollabUser;
-  onSave: (pageId: string, title: string) => void;
+  onSave: (pageId: string, title: string, parentId: string | null) => void;
   isLoading: boolean;
 }
 
 function ConnectedEditor({ page, currentUser, onSave, isLoading }: ConnectedEditorProps) {
   const [authUser] = useAtom(currentUserAtom);
+  const [pageTree] = useAtom(pageTreeAtom);
   const token = authUser?.access_token ?? "";
+  const [parentId, setParentId] = useState(page.parent_id ?? null);
+  const pageOptions = useMemo(
+    () => flattenTree(pageTree).filter((p) => p.id !== page.id),
+    [pageTree, page.id],
+  );
 
   const editorState: CollaborationReady | null = useCollaboration({
     wsUrl: WS_URL,
@@ -64,6 +77,26 @@ function ConnectedEditor({ page, currentUser, onSave, isLoading }: ConnectedEdit
     <EditorPageLayout
       titleInput={<PageTitleInput value={title} onChange={setTitle} placeholder="Page title" />}
       slugInput={<PageSlugInput value={slug} onChange={setSlug} />}
+      parentSelector={
+        <Select
+          value={parentId ?? "none"}
+          onValueChange={(v: string) => {
+            setParentId(v === "none" ? null : v);
+          }}
+        >
+          <SelectTrigger className="w-56 text-sm">
+            <SelectValue placeholder="No parent" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">No parent</SelectItem>
+            {pageOptions.map((p) => (
+              <SelectItem key={p.id} value={p.id}>
+                {p.title}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      }
       editor={<EditorCanvas editorState={editorState} currentUser={currentUser} />}
       footer={
         <EditPageFooter
@@ -71,7 +104,7 @@ function ConnectedEditor({ page, currentUser, onSave, isLoading }: ConnectedEdit
             // TODO: delete API integration
           }}
           onSave={() => {
-            onSave(page.id, title);
+            onSave(page.id, title, parentId);
           }}
           isSaving={isLoading}
           disabled={!isValid}
@@ -106,15 +139,7 @@ export function EditPageView() {
   if (!authUser || !pageSlug) return null;
 
   if (notFound) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full gap-3 text-center">
-        <p className="text-4xl">404</p>
-        <p className="text-lg font-medium">Page not found</p>
-        <p className="text-sm text-muted-foreground">
-          No page exists at <code className="font-mono">/{pageSlug}</code>
-        </p>
-      </div>
-    );
+    return <NotFoundView />;
   }
 
   if (isLoading || !currentPage) {
@@ -129,8 +154,8 @@ export function EditPageView() {
     <ConnectedEditor
       page={currentPage}
       currentUser={currentUser}
-      onSave={(pageId, title) => {
-        void saveMeta(pageId, title);
+      onSave={(pageId, title, parentId) => {
+        void saveMeta(pageId, title, parentId);
       }}
       isLoading={isLoading}
     />

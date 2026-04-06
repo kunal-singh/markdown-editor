@@ -47,8 +47,12 @@ export async function savePageMetaUseCase(
   deps: PageDependencies,
   pageId: string,
   title: string,
+  parentId?: string | null,
 ): Promise<void> {
   if (!title.trim()) throw new Error("Page title cannot be empty");
-  const updated = await deps.updatePage(pageId, { title }, deps.token);
+  const body: PageUpdate = { title };
+  if (parentId !== undefined) body.parent_id = parentId ?? undefined;
+  const updated = await deps.updatePage(pageId, body, deps.token);
   deps.setCurrentPage(updated);
+  await loadPageTreeUseCase(deps);
 }

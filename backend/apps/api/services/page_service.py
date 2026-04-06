@@ -8,6 +8,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.schemas import PageCreate, PageRead, PageSearchResult, PageTreeNode, PageUpdate
+from core.security import sanitize_content
 from persistence.repository import PageRepository
 
 
@@ -35,6 +36,8 @@ class PageService:
                     detail="Parent page not found",
                 )
         payload.created_by_id = user_id
+        if payload.content_text is not None:
+            payload.content_text = sanitize_content(payload.content_text)
         return await self._page_repo.create(session, payload)
 
     async def get_by_slug(self, session: AsyncSession, slug: str) -> PageRead:
@@ -59,6 +62,19 @@ class PageService:
         payload: PageUpdate,
         user_id: uuid.UUID | None = None,
     ) -> PageRead:
+        if payload.parent_id is not None:
+            if payload.parent_id == page_id:
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="A page cannot be its own parent",
+                )
+            if await self._page_repo.would_create_cycle(session, page_id, payload.parent_id):
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="Setting this parent would create a cycle in the page hierarchy",
+                )
+        if payload.content_text is not None:
+            payload.content_text = sanitize_content(payload.content_text)
         page = await self._page_repo.update(session, page_id, payload, edited_by_id=user_id)
         if page is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Page not found")

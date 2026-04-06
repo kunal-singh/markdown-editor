@@ -125,6 +125,28 @@ class PageRepository:
         return roots
 
     @staticmethod
+    async def would_create_cycle(
+        session: AsyncSession, page_id: uuid.UUID, proposed_parent_id: uuid.UUID
+    ) -> bool:
+        """Return True if setting parent_id would create an ancestor cycle.
+
+        Walks up the ancestor chain from proposed_parent_id. If page_id is
+        encountered before reaching a root, the assignment is cyclic.
+        """
+        visited: set[uuid.UUID] = set()
+        current_id: uuid.UUID | None = proposed_parent_id
+        while current_id is not None:
+            if current_id == page_id:
+                return True
+            if current_id in visited:
+                # Existing cycle in data — treat as cycle to be safe.
+                return True
+            visited.add(current_id)
+            row = await session.get(Page, current_id)
+            current_id = row.parent_id if row is not None else None
+        return False
+
+    @staticmethod
     async def get_binary(session: AsyncSession, page_id: uuid.UUID) -> bytes | None:
         """Return the raw Yjs binary state for a page without mapping to a schema."""
         page = await session.get(Page, page_id)
@@ -142,14 +164,20 @@ class PageRepository:
 
     @staticmethod
     async def search(session: AsyncSession, query_str: str) -> list[PageSearchResult]:
-        ts_query = func.websearch_to_tsquery("english", query_str)
+        # Append :* to the last token so partial words match (e.g. "seco" → "second").
+        # websearch_to_tsquery is used first to safely tokenise, then the result is
+        # cast to text, the trailing quote is replaced with :*', and re-cast to tsquery.
+        # Simpler approach: build the prefix query directly via to_tsquery.
+        safe = query_str.strip().split()
+        prefix_query = " & ".join(f"{t}:*" for t in safe if t)
+        ts_query = func.to_tsquery("english", prefix_query)
         stmt = (
             select(
                 Page.title,
                 Page.slug,
                 func.ts_headline(
                     "english",
-                    Page.content_text,
+                    func.coalesce(Page.content_text, ""),
                     ts_query,
                     "StartSel=<mark>, StopSel=</mark>, MaxWords=30",
                 ).label("excerpt"),

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAtom, useSetAtom } from "jotai";
 import { toast } from "@markdown-editor/ui";
@@ -30,6 +30,9 @@ export function useEditPage() {
 
   const token = currentUser?.access_token ?? "";
 
+  const navigateRef = useRef(navigate);
+  navigateRef.current = navigate;
+
   const deps = useMemo<PageDependencies>(
     () => ({
       createPage: createPageApi,
@@ -41,10 +44,11 @@ export function useEditPage() {
       setCurrentPage,
       setPageTree,
       navigate: (path: string) => {
-        void navigate(path);
+        void navigateRef.current(path);
       },
     }),
-    [token, setCurrentPage, setPageTree, navigate],
+    // navigate excluded — accessed via ref to keep deps stable
+    [token, setCurrentPage, setPageTree],
   );
 
   const loadPage = useCallback(
@@ -70,11 +74,11 @@ export function useEditPage() {
   );
 
   const saveMeta = useCallback(
-    async (pageId: string, title: string) => {
+    async (pageId: string, title: string, parentId?: string | null) => {
       setIsLoading(true);
       setError(null);
       try {
-        await savePageMetaUseCase(deps, pageId, title);
+        await savePageMetaUseCase(deps, pageId, title, parentId);
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Failed to save page";
         setError(msg);

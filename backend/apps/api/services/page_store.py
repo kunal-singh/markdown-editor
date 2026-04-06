@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from collaboration import DocumentStore
 from core.schemas import PageUpdate
+from core.security import sanitize_content
 from persistence.database import get_session
 from persistence.repository import PageRepository
 
@@ -31,4 +32,6 @@ class PageDocumentStore:
         session: AsyncSession
         async for session in get_session():
             await PageRepository.update_binary(session, page_id, binary)
-            await PageRepository.update(session, page_id, PageUpdate(content_text=plain_text))
+            await PageRepository.update(
+                session, page_id, PageUpdate(content_text=sanitize_content(plain_text))
+            )

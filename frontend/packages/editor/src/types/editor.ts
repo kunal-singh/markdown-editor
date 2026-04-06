@@ -24,15 +24,6 @@ export interface UseCollaborationResult {
   connectedUsers: CollabUser[];
 }
 
-// Local (new-page) mode: no WebSocket, no cursor awareness.
-// provider is null so CollaborationCursor is skipped by buildExtensions.
-export interface LocalEditorResult {
-  doc: Y.Doc;
-  provider: null;
-  status: "disconnected";
-  connectedUsers: [];
-}
-
 // null = refs not yet populated (before the WS effect fires on first render).
-export type CollaborationReady = UseCollaborationResult | LocalEditorResult;
+export type CollaborationReady = UseCollaborationResult;
 export type CollaborationState = CollaborationReady | null;

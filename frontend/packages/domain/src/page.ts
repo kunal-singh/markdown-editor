@@ -20,9 +20,9 @@ export const pageReadSchema = z.object({
   content_text: z.string().nullable().optional(),
   created_by_id: z.uuid().nullable().optional(),
   last_edited_by_id: z.uuid().nullable().optional(),
-  last_edited_at: z.iso.datetime().nullable().optional(),
-  created_at: z.iso.datetime().optional(),
-  updated_at: z.iso.datetime().optional(),
+  last_edited_at: z.string().nullable().optional(),
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
 });
 
 export const pageUpdateSchema = z.object({
@@ -48,6 +48,13 @@ export const pageTreeNodeSchema: z.ZodType<PageTreeNode> = z.lazy(() =>
 
 export const pageTreeResponseSchema = z.array(pageTreeNodeSchema);
 
+export const pageSearchResultSchema = z.object({
+  title: z.string(),
+  slug: z.string(),
+  excerpt: z.string(),
+});
+
 export type CreatePageRequest = z.infer<typeof createPageRequestSchema>;
 export type PageRead = z.infer<typeof pageReadSchema>;
 export type PageUpdate = z.infer<typeof pageUpdateSchema>;
+export type PageSearchResult = z.infer<typeof pageSearchResultSchema>;

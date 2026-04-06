@@ -21,12 +21,16 @@ import {
 } from "@markdown-editor/ui";
 import { useAuth } from "@/auth/hooks";
 import { usePages } from "@/editor/hooks/usePages";
+import { ThemeToggle } from "@/theme/ThemeToggle";
 import { PageTreeNav } from "./PageTreeNav";
+import { usePageSearch } from "./usePageSearch";
+import { PageSearchResults } from "./PageSearchResults";
 
 export function DashboardShell() {
   const { currentUser, logout } = useAuth();
   const { loadPageTree, pageTree } = usePages();
   const navigate = useNavigate();
+  const { query, setQuery, results, isSearching } = usePageSearch();
 
   useEffect(() => {
     void loadPageTree();
@@ -52,7 +56,23 @@ export function DashboardShell() {
                 Search
               </label>
               <SearchIcon className="pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2 opacity-50 select-none" />
-              <SidebarInput id="sidebar-search" placeholder="Search pages..." className="pl-8" />
+              <SidebarInput
+                id="sidebar-search"
+                placeholder="Search pages..."
+                className="pl-8"
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                }}
+              />
+              <PageSearchResults
+                results={results}
+                query={query}
+                isSearching={isSearching}
+                onSelect={() => {
+                  setQuery("");
+                }}
+              />
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarHeader>
@@ -92,7 +112,8 @@ export function DashboardShell() {
       <SidebarInset>
         <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1" />
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <ThemeToggle />
             <Button
               size="sm"
               onClick={() => {
