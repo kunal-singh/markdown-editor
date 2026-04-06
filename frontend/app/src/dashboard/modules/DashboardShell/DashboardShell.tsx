@@ -1,16 +1,20 @@
 import { Outlet, NavLink } from "react-router-dom";
-import { FileTextIcon, SettingsIcon, LogOutIcon } from "lucide-react";
+import { FileTextIcon, SettingsIcon, LogOutIcon, SearchIcon } from "lucide-react";
 import {
   SidebarProvider,
   Sidebar,
   SidebarHeader,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarInput,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarInset,
   SidebarTrigger,
+  SidebarRail,
   SidebarSeparator,
 } from "@markdown-editor/ui";
 import { useAuth } from "@/auth/hooks";
@@ -27,33 +31,46 @@ export function DashboardShell() {
     <SidebarProvider>
       <Sidebar collapsible="icon">
         <SidebarHeader>
-          <div className="flex items-center gap-2 px-2 py-1">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-blue-600">
-              <FileTextIcon className="h-4 w-4 text-white" />
-            </div>
-            <span className="truncate text-sm font-semibold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
-              Markdown Editor
-            </span>
-          </div>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton size="lg" className="cursor-default">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                  <FileTextIcon className="size-4" />
+                </div>
+                <span className="truncate font-semibold">WikiSync</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+          <SidebarGroup className="py-0 group-data-[collapsible=icon]:hidden">
+            <SidebarGroupContent className="relative">
+              <label htmlFor="sidebar-search" className="sr-only">
+                Search
+              </label>
+              <SearchIcon className="pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2 opacity-50 select-none" />
+              <SidebarInput id="sidebar-search" placeholder="Search pages..." className="pl-8" />
+            </SidebarGroupContent>
+          </SidebarGroup>
         </SidebarHeader>
 
-        <SidebarSeparator />
-
         <SidebarContent>
-          <SidebarMenu>
-            {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
-              <SidebarMenuItem key={to}>
-                <NavLink to={to}>
-                  {({ isActive }) => (
-                    <SidebarMenuButton isActive={isActive} tooltip={label}>
-                      <Icon />
-                      <span>{label}</span>
-                    </SidebarMenuButton>
-                  )}
-                </NavLink>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+                  <SidebarMenuItem key={to}>
+                    <NavLink to={to}>
+                      {({ isActive }) => (
+                        <SidebarMenuButton isActive={isActive} tooltip={label}>
+                          <Icon />
+                          <span>{label}</span>
+                        </SidebarMenuButton>
+                      )}
+                    </NavLink>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         </SidebarContent>
 
         <SidebarFooter>
@@ -76,11 +93,12 @@ export function DashboardShell() {
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarFooter>
+
+        <SidebarRail />
       </Sidebar>
 
       <SidebarInset>
-        {/* Top bar with sidebar toggle */}
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b border-slate-200 px-4">
+        <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1" />
         </header>
         <main className="flex flex-1 flex-col p-6">

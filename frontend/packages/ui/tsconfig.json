@@ -5,7 +5,7 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@ui/*": ["./src/*"]
     }
   },
   "include": ["src", "vite.config.ts"]

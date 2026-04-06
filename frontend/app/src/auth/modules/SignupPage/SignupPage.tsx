@@ -3,9 +3,9 @@ import { LoaderCircleIcon } from "lucide-react";
 import {
   Button,
   Input,
-  FormField,
-  FormLabel,
-  FormMessage,
+  Field,
+  FieldError,
+  FieldLabel,
   Card,
   CardContent,
   CardDescription,
@@ -49,10 +49,8 @@ export function SignupPage() {
                   </div>
                 )}
 
-                <FormField invalid={!!errors.email}>
-                  <FormLabel htmlFor="signup-email" required>
-                    Email
-                  </FormLabel>
+                <Field>
+                  <FieldLabel htmlFor="signup-email">Email</FieldLabel>
                   <Input
                     id="signup-email"
                     type="email"
@@ -61,13 +59,11 @@ export function SignupPage() {
                     aria-invalid={!!errors.email}
                     {...register("email")}
                   />
-                  <FormMessage message={errors.email?.message} />
-                </FormField>
+                  <FieldError errors={[errors.email]} />
+                </Field>
 
-                <FormField invalid={!!errors.password}>
-                  <FormLabel htmlFor="signup-password" required>
-                    Password
-                  </FormLabel>
+                <Field>
+                  <FieldLabel htmlFor="signup-password">Password</FieldLabel>
                   <Input
                     id="signup-password"
                     type="password"
@@ -76,8 +72,8 @@ export function SignupPage() {
                     aria-invalid={!!errors.password}
                     {...register("password")}
                   />
-                  <FormMessage message={errors.password?.message} />
-                </FormField>
+                  <FieldError errors={[errors.password]} />
+                </Field>
 
                 <Button type="submit" disabled={isLoading} className="w-full">
                   {isLoading ? <LoaderCircleIcon className="animate-spin" /> : "Create account"}

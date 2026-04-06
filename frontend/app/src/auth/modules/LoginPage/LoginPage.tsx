@@ -3,9 +3,10 @@ import { LoaderCircleIcon } from "lucide-react";
 import {
   Button,
   Input,
-  FormField,
-  FormLabel,
-  FormMessage,
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
   Card,
   CardContent,
   CardDescription,
@@ -29,8 +30,8 @@ export function LoginPage() {
         <div className="flex flex-col gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>Sign in to your account</CardTitle>
-              <CardDescription>Enter your email and password to sign in</CardDescription>
+              <CardTitle>Login to your account</CardTitle>
+              <CardDescription>Enter your email below to login to your account</CardDescription>
             </CardHeader>
             <CardContent>
               <form
@@ -49,10 +50,8 @@ export function LoginPage() {
                   </div>
                 )}
 
-                <FormField invalid={!!errors.email}>
-                  <FormLabel htmlFor="login-email" required>
-                    Email
-                  </FormLabel>
+                <Field>
+                  <FieldLabel htmlFor="login-email">Email</FieldLabel>
                   <Input
                     id="login-email"
                     type="email"
@@ -61,27 +60,34 @@ export function LoginPage() {
                     aria-invalid={!!errors.email}
                     {...register("email")}
                   />
-                  <FormMessage message={errors.email?.message} />
-                </FormField>
+                  <FieldError errors={[errors.email]} />
+                </Field>
 
-                <FormField invalid={!!errors.password}>
-                  <FormLabel htmlFor="login-password" required>
-                    Password
-                  </FormLabel>
+                <Field>
+                  <div className="flex items-center">
+                    <FieldLabel htmlFor="login-password">Password</FieldLabel>
+                    <Link to="#" className="ml-auto text-sm underline-offset-4 hover:underline">
+                      Forgot your password?
+                    </Link>
+                  </div>
                   <Input
                     id="login-password"
                     type="password"
                     autoComplete="current-password"
-                    placeholder="••••••••"
                     aria-invalid={!!errors.password}
                     {...register("password")}
                   />
-                  <FormMessage message={errors.password?.message} />
-                </FormField>
+                  <FieldError errors={[errors.password]} />
+                </Field>
 
-                <Button type="submit" disabled={isLoading} className="w-full">
-                  {isLoading ? <LoaderCircleIcon className="animate-spin" /> : "Sign in"}
-                </Button>
+                <FieldGroup>
+                  <Button type="submit" disabled={isLoading} className="w-full">
+                    {isLoading ? <LoaderCircleIcon className="animate-spin" /> : "Login"}
+                  </Button>
+                  <Button variant="outline" type="button" className="w-full">
+                    Login with Google
+                  </Button>
+                </FieldGroup>
 
                 <p className="text-center text-sm text-muted-foreground">
                   Don&apos;t have an account?{" "}
