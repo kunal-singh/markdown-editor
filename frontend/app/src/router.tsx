@@ -6,6 +6,8 @@ import { SignupPage } from "@/auth/modules/SignupPage/SignupPage";
 import { DashboardShell } from "@/dashboard/modules/DashboardShell/DashboardShell";
 import { PagesView } from "@/dashboard/modules/PagesView/PagesView";
 import { SettingsView } from "@/dashboard/modules/SettingsView/SettingsView";
+import { NewPageView } from "@/editor/modules/EditorView/NewPageView";
+import { EditPageView } from "@/editor/modules/EditorView/EditPageView";
 
 function PrivateRoute() {
   const [currentUser] = useAtom(currentUserAtom);
@@ -51,6 +53,14 @@ export const router = createBrowserRouter([
           {
             path: "pages",
             element: <PagesView />,
+          },
+          {
+            path: "pages/new",
+            element: <NewPageView />,
+          },
+          {
+            path: "pages/:pageId",
+            element: <EditPageView />,
           },
           {
             path: "settings",

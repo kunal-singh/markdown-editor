@@ -15,6 +15,12 @@ frontend/                  ← pnpm workspace root (tooling: eslint, prettier, t
 - Node version: 22 (`nvm use 22.15.0`)
 - After every task: `pnpm lint && pnpm format`
 
+## LSP Diagnostics
+
+**LSP errors may be false positives.** In this pnpm workspace, packages rely on hoisted `node_modules` at the workspace root. The IDE's TypeScript server, when opened in a package subdirectory, may not resolve hoisted deps and will report spurious "Cannot find module" or JSX errors.
+
+**Before acting on any LSP diagnostic:** run `pnpm --filter <package> typecheck` (or `pnpm typecheck` from `frontend/`). If the CLI passes clean, the LSP error is a false positive — ignore it and do not spend tokens investigating.
+
 ## Backend Monorepo
 
 ## Structure
@@ -35,6 +41,12 @@ backend/                   ← uv workspace root (tooling: ruff, mypy)
 - Python version: 3.11
 - After every task: `make check` (ruff + mypy)
 - Install: `make install` (`uv sync --all-packages`)
+
+## LSP Diagnostics
+
+**LSP errors may be false positives.** The IDE's Pyright/Pylance server may not resolve packages installed in the uv venv (especially workspace packages and packages without stubs).
+
+**Before acting on any LSP diagnostic:** run `make check` from `backend/`. If mypy passes clean, the LSP error is a false positive — ignore it and do not spend tokens investigating.
 
 ---
 

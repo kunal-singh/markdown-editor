@@ -1,0 +1,9 @@
+{
+  "extends": "@kunal-singh/typescript-config/react",
+  "compilerOptions": {
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": { "@editor/*": ["./src/*"] }
+  },
+  "include": ["src"]
+}

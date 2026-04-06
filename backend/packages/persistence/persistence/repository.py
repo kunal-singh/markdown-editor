@@ -92,6 +92,14 @@ class PageRepository:
         return PageRead.model_validate(page)
 
     @staticmethod
+    async def get_binary(session: AsyncSession, page_id: uuid.UUID) -> bytes | None:
+        """Return the raw Yjs binary state for a page without mapping to a schema."""
+        page = await session.get(Page, page_id)
+        if page is None:
+            return None
+        return page.content_binary
+
+    @staticmethod
     async def update_binary(session: AsyncSession, page_id: uuid.UUID, binary: bytes) -> None:
         page = await session.get(Page, page_id)
         if page is None:

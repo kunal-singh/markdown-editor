@@ -15,6 +15,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@markdown-editor/domain": "workspace:^",
     "@markdown-editor/infra": "workspace:^",
+    "@markdown-editor/editor": "workspace:*",
     "@markdown-editor/ui": "workspace:*",
     "jotai": "^2.19.0",
     "lucide-react": "^0.525.0",
